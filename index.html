@@ -7,114 +7,153 @@
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-:root{--ink:#1c2321;--mute:#5d6b67;--line:#dfe5e3;--acc:#0f766e;--accbg:#e6f4f2;--warn:#fff4d6;--warnline:#e8c766}
+:root{--ink:#111;--mute:#6b7280;--line:#e6e6e4;--panel:#f6f6f5;--ok:#c8efdc;--okd:#2f8f6b;--bad:#f7c6c6;--badd:#c0392b}
 *{box-sizing:border-box}
 html,body{margin:0;background:#fff;color:var(--ink);font-family:"Hind Siliguri",system-ui,sans-serif;font-size:16px;line-height:1.5}
-.wrap{max-width:860px;margin:0 auto;padding:20px 16px 80px}
-h1{font-size:1.7rem;margin:8px 0 2px}h2{font-size:1.15rem;margin:0 0 10px}
-.sub{color:var(--mute);margin:0 0 20px}
-section{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px;background:#fff}
-label{display:block;font-weight:500;font-size:.92rem;margin-bottom:4px}
-input,select,textarea,button{font:inherit}
-input[type=text],input[type=password],input[type=number],select,textarea{width:100%;padding:8px 10px;border:1px solid #c9d3d0;border-radius:8px;background:#fff;color:var(--ink)}
-textarea{resize:vertical}
-.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-button{border:1px solid var(--acc);background:var(--acc);color:#fff;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:600}
-button.ghost{background:#fff;color:var(--acc)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 14px;font-weight:500}
+button:hover{background:var(--panel)}
+button.dark{background:var(--ink);color:#fff;border-color:var(--ink)}button.dark:hover{background:#333}
 button:disabled{opacity:.5;cursor:not-allowed}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #7cc5bd;outline-offset:1px}
-.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.hint{color:var(--mute);font-size:.88rem;margin:6px 0 0}
-progress{width:100%;height:10px;margin-top:10px;accent-color:var(--acc)}
-#status{margin-top:8px;font-size:.92rem;color:var(--mute);min-height:1.3em}
-.cue{display:grid;grid-template-columns:92px 92px 1fr auto;gap:8px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
-.cue:first-child{border-top:0}
-.cue textarea{min-height:58px}
-.cue .n{font-size:.78rem;color:var(--mute)}
-.cue button{padding:6px 10px}
-@media(max-width:620px){.cue{grid-template-columns:1fr 1fr}.cue textarea{grid-column:1/-1}.cue .del{grid-column:1/-1}}
-#bar{position:fixed;left:0;right:0;bottom:0;background:var(--warn);border-top:1px solid var(--warnline);padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;z-index:9}
-#bar.on{display:flex}
-.exp{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
-.exp .main{background:var(--accbg)}
+:focus-visible{outline:3px solid #9ad4bd;outline-offset:1px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:20}
+.brand{font-weight:700;font-size:1.15rem;margin-right:6px}
+.tabs{display:flex;gap:4px}.tabs button{border:0;border-radius:999px;background:none;color:var(--mute);padding:6px 16px}
+.tabs button.on{background:var(--ink);color:#fff}
+.tools{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tools .ic{padding:7px 9px;display:flex}.tools .ic svg{width:18px;height:18px}
+#saved{color:var(--mute);font-size:.9rem}
+.dd{position:relative}#menu{position:absolute;right:0;top:44px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.1);padding:6px;min-width:170px;z-index:30}
+#menu button{display:block;width:100%;text-align:left;border:0;border-radius:8px;padding:8px 12px}
+#menu button.first{font-weight:700}
+main{max-width:1240px;margin:0 auto;padding:20px}
+.card{background:var(--panel);border-radius:14px;padding:16px}
+label{display:block;font-weight:500;font-size:.9rem;margin-bottom:4px}
+input[type=text],input[type=password],input[type=number],select{width:100%;padding:8px 10px;border:1px solid #d5d5d2;border-radius:8px;background:#fff}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.hint{color:var(--mute);font-size:.86rem;margin:6px 0 0}
+h2{font-size:1.05rem;margin:0 0 12px}
+#pAudio{max-width:720px;margin:20px auto}
+progress{width:100%;height:8px;accent-color:var(--ink);margin-top:12px}
+#status{min-height:1.4em;font-size:.9rem;color:var(--mute);margin-top:8px}
+.grid{display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+#cues{max-height:62vh;overflow-y:auto;padding:6px 8px 6px 4px}
+.cue{display:grid;grid-template-columns:84px 1fr 32px;gap:14px;border-left:2px solid var(--line);padding:6px 0 6px 18px;transition:border-color .15s}
+.cue.act{border-left-color:var(--okd)}
+.cue.act .st,.cue.act .en{color:var(--ink)}
+.tm{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.tm input{width:84px;border:0;background:none;padding:2px 0;color:var(--mute);font-size:.88rem;font-variant-numeric:tabular-nums}
+.tm input:focus-visible{outline-offset:0;border-radius:4px}
+.cnt{font-size:.88rem;font-variant-numeric:tabular-nums;color:var(--mute)}
+.cue.bad .cnt{color:var(--badd);font-weight:600}
+.cue textarea{width:100%;border:0;background:none;resize:none;font-size:1.2rem;line-height:1.4;padding:4px 0;overflow:hidden}
+.cue .x{border:0;background:none;color:var(--mute);padding:2px;height:28px;font-size:1.2rem;border-radius:8px}
+.mg{display:block;margin:0 0 0 -11px;padding:2px;border-radius:6px;width:22px;height:22px;background:#fff;border:1px solid var(--line)}
+.mg svg{width:14px;height:14px;display:block;margin:auto}
+.tl{margin-top:18px;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+#tls{overflow-x:auto;position:relative}
+#tlin{position:relative}
+#ph{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);pointer-events:none}
+#ph::before{content:"";position:absolute;top:0;left:-4px;border:5px solid transparent;border-top-color:var(--ink)}
+.legend{display:flex;gap:14px;padding:8px 14px;font-size:.84rem;color:var(--mute);border-top:1px solid var(--line);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+aside .card{margin-bottom:14px}
+audio{width:100%}
+.fn{font-weight:600;word-break:break-all;margin:0 0 8px}
 details summary{cursor:pointer;font-weight:600}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#bar{position:fixed;left:0;right:0;bottom:0;background:#fff4d6;border-top:1px solid #e8c766;padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;z-index:40}
+#bar.on{display:flex}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Subtitle Maker</h1>
-  <p class="sub">MP3 upload করুন → Speech to Text → Subtitle edit → Export। Bangla + English. সব কাজ আপনার browser-এই হয়, কোনো server লাগে না।</p>
+<header class="top">
+  <div class="brand">Subtitle Maker</div>
+  <nav class="tabs"><button id="tA" class="on">Audio</button><button id="tS">Subtitles</button></nav>
+  <div class="tools">
+    <button class="ic" id="undo" title="Undo" aria-label="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"/></svg></button>
+    <button class="ic" id="redo" title="Redo" aria-label="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 14 5-5-5-5M20 9H10a6 6 0 0 0 0 12h3"/></svg></button>
+    <span id="saved">Last saved never</span>
+    <button id="save">Save</button>
+    <div class="dd">
+      <button class="dark" id="exp">Export ▾</button>
+      <div id="menu" hidden>
+        <button class="first" data-x="srt">SRT</button><button data-x="vtt">VTT</button><button data-x="txt">Text</button>
+        <button data-x="pdf">PDF</button><button data-x="docx">DOCX</button><button data-x="json">JSON</button><button data-x="html">HTML</button>
+      </div>
+    </div>
+  </div>
+</header>
 
-  <section>
-    <h2>1. Audio &amp; Speech to Text</h2>
+<main>
+  <section id="pAudio" class="card">
+    <h2>Audio থেকে Speech to Text</h2>
     <div class="row">
       <div><label for="file">Audio file (.mp3, .wav, .m4a)</label><input id="file" type="file" accept="audio/*,.mp3"></div>
       <div><label for="lang">Language / ভাষা</label>
         <select id="lang"><option value="bengali">বাংলা (Bangla)</option><option value="english">English</option><option value="">Auto detect</option></select></div>
       <div><label for="model">Model</label>
-        <select id="model"><option value="Xenova/whisper-small" selected>Small (বাংলার জন্য ভালো, ধীর)</option><option value="Xenova/whisper-base">Base (দ্রুত, কম accurate)</option><option value="Xenova/whisper-tiny">Tiny (খুব দ্রুত, English-এর জন্য)</option></select></div>
+        <select id="model"><option value="Xenova/whisper-small" selected>Small (বাংলার জন্য ভালো)</option><option value="Xenova/whisper-base">Base (দ্রুত)</option><option value="Xenova/whisper-tiny">Tiny (English)</option></select></div>
     </div>
-    <div class="actions"><button id="go">Speech to Text শুরু করুন</button></div>
+    <div class="actions"><button class="dark" id="go">Speech to Text শুরু করুন</button><button id="skip">Subtitles-এ যান</button></div>
     <progress id="prog" value="0" max="100" hidden></progress>
     <div id="status" role="status"></div>
-    <p class="hint">প্রথমবার model download হবে (Small ≈ 250MB), এরপর browser-এ cache থাকবে। Audio কোথাও upload হয় না।</p>
+    <p class="hint">প্রথমবার model download হবে (Small ≈ 250MB), পরে cache থাকবে। Audio কোথাও upload হয় না, সব কাজ আপনার browser-এই হয়।</p>
   </section>
 
-  <section>
-    <h2>2. Edit subtitles</h2>
-    <div class="row">
-      <div><label for="mc">Max characters per line</label><input id="mc" type="number" min="1" max="100" value="10"></div>
-      <div><label for="ml">Max lines per cue</label><input id="ml" type="number" min="1" max="6" value="2"></div>
-      <div><label for="ms">Max seconds per cue</label><input id="ms" type="number" min="0.2" max="30" step="0.1" value="1"></div>
+  <section id="pSubs" hidden>
+    <div class="grid">
+      <div id="cues"></div>
+      <aside>
+        <div class="card">
+          <p class="fn" id="fn">—</p>
+          <audio id="aud" controls></audio>
+          <p class="hint" id="noaud">Play করতে Audio tab থেকে file-টা আবার বেছে নিন।</p>
+        </div>
+        <div class="card">
+          <h2>Edit subtitles</h2>
+          <div style="display:grid;gap:10px">
+            <div><label for="mc">Max characters per line</label><input id="mc" type="number" min="1" max="100" value="10"></div>
+            <div><label for="ml">Max lines per cue</label><input id="ml" type="number" min="1" max="6" value="2"></div>
+            <div><label for="ms">Max seconds per cue</label><input id="ms" type="number" min="0.2" max="30" step="0.1" value="1"></div>
+          </div>
+          <div class="actions"><button class="dark" id="apply">Apply</button><button id="add">+ নতুন cue</button></div>
+          <p class="hint">Apply করলে subtitle নতুন করে ভাগ হবে। লাল cue মানে limit ছাড়িয়ে গেছে।</p>
+        </div>
+        <div class="card">
+          <details>
+            <summary>GitHub sync</summary>
+            <div style="display:grid;gap:10px;margin-top:12px">
+              <div><label for="gu">GitHub username</label><input id="gu" type="text" autocomplete="off"></div>
+              <div><label for="gr">Repository name</label><input id="gr" type="text" autocomplete="off"></div>
+              <div><label for="gp">File path</label><input id="gp" type="text" value="subtitle-progress.json"></div>
+              <div><label for="gt">Personal access token</label><input id="gt" type="password" autocomplete="off"></div>
+            </div>
+            <div class="actions"><button id="gsave">Config রাখুন</button><button id="gload">GitHub থেকে আনুন</button></div>
+            <p class="hint">Token শুধু এই browser-এ থাকে। Private repo ব্যবহার করুন।</p>
+          </details>
+        </div>
+      </aside>
     </div>
-    <div class="actions">
-      <button id="apply" class="ghost">Settings প্রয়োগ করুন</button>
-      <button id="save">Save</button>
+    <div class="tl">
+      <div id="tls"><div id="tlin"><canvas id="cv"></canvas><div id="ph"></div></div></div>
+      <div class="legend"><span><i style="background:var(--ok)"></i>Limit-এর মধ্যে</span><span><i style="background:var(--bad)"></i>Limit ছাড়িয়েছে</span><span>Timeline-এ click করলে সেখান থেকে play হবে</span></div>
     </div>
-    <p class="hint">Settings বদলালে subtitle নতুন করে ভাগ হবে (হাতে করা edit মুছে যাবে)। নিচে প্রতিটা cue নিজে edit করা যাবে।</p>
-    <div id="cues"></div>
-    <div class="actions"><button id="add" class="ghost">+ নতুন cue</button></div>
   </section>
+</main>
 
-  <section>
-    <h2>3. Export</h2>
-    <div class="exp">
-      <button class="main" data-x="srt">SRT</button>
-      <button data-x="vtt" class="ghost">VTT</button>
-      <button data-x="txt" class="ghost">Text</button>
-      <button data-x="pdf" class="ghost">PDF</button>
-      <button data-x="docx" class="ghost">DOCX</button>
-      <button data-x="json" class="ghost">JSON</button>
-      <button data-x="html" class="ghost">HTML</button>
-    </div>
-    <p class="hint">PDF-এর জন্য print window খুলবে, সেখানে "Save as PDF" বেছে নিন (এতে বাংলা অক্ষর ঠিক থাকে)।</p>
-  </section>
-
-  <section>
-    <details>
-      <summary>GitHub sync (progress সব device-এ পেতে)</summary>
-      <div class="row" style="margin-top:12px">
-        <div><label for="gu">GitHub username</label><input id="gu" type="text" autocomplete="off"></div>
-        <div><label for="gr">Repository name</label><input id="gr" type="text" autocomplete="off"></div>
-        <div><label for="gp">File path</label><input id="gp" type="text" value="subtitle-progress.json"></div>
-        <div><label for="gt">Personal access token (contents: write)</label><input id="gt" type="password" autocomplete="off"></div>
-      </div>
-      <div class="actions"><button id="gsave" class="ghost">Config রাখুন</button><button id="gload" class="ghost">GitHub থেকে progress আনুন</button></div>
-      <p class="hint">Token শুধু এই browser-এর localStorage-এ থাকে। Public repo-তে progress file দেখা যাবে, তাই private repo ব্যবহার করুন।</p>
-    </details>
-  </section>
-</div>
-
-<div id="bar"><span id="barmsg"></span><button id="up">Upload progress to GitHub</button></div>
+<div id="bar"><span id="barmsg"></span><button class="dark" id="up">Upload progress to GitHub</button></div>
 
 <script type="module">
 import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2";
 env.allowLocalModels = false;
 const $ = id => document.getElementById(id);
-const S = { name: "subtitle", words: [], cues: [], set: { chars: 10, lines: 2, sec: 1 } };
-let pending = false;
+const S = { name: "subtitle", words: [], cues: [], set: { chars: 10, lines: 2, sec: 1 }, peaks: [], dur: 0 };
+const PPS = 80, PK = 20;
+let pending = false, hist = [], hi = -1, tmr = null;
 
-/* ---------- helpers ---------- */
+/* ---------- text helpers ---------- */
 const seg = s => typeof Intl !== "undefined" && Intl.Segmenter
   ? [...new Intl.Segmenter("bn", { granularity: "grapheme" }).segment(s)].map(x => x.segment) : [...s];
 function wrap(text, max) {
@@ -149,7 +188,7 @@ function build() {
   for (const c of raw) {
     const ls = wrap(c.text, chars);
     if (ls.length <= lines) { S.cues.push({ s: c.s, e: c.e, text: ls.join("\n") }); continue; }
-    const parts = Math.ceil(ls.length / lines), d = (c.e - c.s) / parts; // very long single word: split by time
+    const parts = Math.ceil(ls.length / lines), d = (c.e - c.s) / parts;
     for (let i = 0; i < parts; i++) S.cues.push({ s: c.s + d * i, e: c.s + d * (i + 1), text: ls.slice(i * lines, (i + 1) * lines).join("\n") });
   }
 }
@@ -159,43 +198,104 @@ function ts(x, sep) {
   return `${pad(h)}:${pad(m)}:${pad(s)}${sep}${pad(ms % 1000, 3)}`;
 }
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const maxLen = c => Math.max(0, ...c.text.split("\n").map(l => seg(l).length));
+const isBad = c => maxLen(c) > S.set.chars || c.text.split("\n").length > S.set.lines || c.e - c.s > S.set.sec + .001;
 
-/* ---------- cue editor ---------- */
+/* ---------- tabs ---------- */
+function tab(n) {
+  $("pAudio").hidden = n !== "A"; $("pSubs").hidden = n !== "S";
+  $("tA").classList.toggle("on", n === "A"); $("tS").classList.toggle("on", n === "S");
+  if (n === "S") { render(); drawTL(); }
+}
+$("tA").onclick = () => tab("A"); $("tS").onclick = () => tab("S"); $("skip").onclick = () => tab("S");
+
+/* ---------- history (undo / redo) ---------- */
+function push() { clearTimeout(tmr); tmr = null; const j = JSON.stringify(S.cues); if (hist[hi] === j) return; hist = hist.slice(0, hi + 1); hist.push(j); if (hist.length > 100) hist.shift(); hi = hist.length - 1; local(); drawTL(); }
+function commit() { clearTimeout(tmr); tmr = setTimeout(push, 500); }
+function resetHist() { hist = [JSON.stringify(S.cues)]; hi = 0; }
+function restore() { S.cues = JSON.parse(hist[hi]); render(); drawTL(); pending = true; bar(); local(); }
+$("undo").onclick = () => { if (tmr) push(); if (hi > 0) { hi--; restore(); } };
+$("redo").onclick = () => { if (hi < hist.length - 1) { hi++; restore(); } };
+function dirty() { pending = true; bar(); commit(); }
+
+/* ---------- cue list ---------- */
+const MG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v7M12 21v-7M8 7l4 4 4-4M8 17l4-4 4 4"/></svg>';
+function fit(t) { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+function refresh(row, c) { row.querySelector(".cnt").textContent = `${maxLen(c)} / ${S.set.chars}`; row.classList.toggle("bad", isBad(c)); }
 function render() {
   const box = $("cues");
-  if (!S.cues.length) { box.innerHTML = '<p class="hint">এখনো কোনো subtitle নেই। আগে audio থেকে Speech to Text করুন।</p>'; return; }
+  if (!S.cues.length) { box.innerHTML = '<div class="card">এখনো কোনো subtitle নেই। Audio tab থেকে Speech to Text করুন, অথবা "+ নতুন cue" চাপুন।</div>'; return; }
   box.innerHTML = "";
   S.cues.forEach((c, i) => {
-    const d = document.createElement("div"); d.className = "cue";
-    d.innerHTML = `<div><span class="n">#${i + 1} Start</span><input type="number" step="0.1" min="0" value="${c.s.toFixed(2)}" aria-label="Start"></div>
-      <div><span class="n">End</span><input type="number" step="0.1" min="0" value="${c.e.toFixed(2)}" aria-label="End"></div>
-      <textarea aria-label="Text">${esc(c.text)}</textarea>
-      <button class="ghost del" title="Delete">মুছুন</button>`;
-    const [a, b] = d.querySelectorAll("input"), t = d.querySelector("textarea");
-    a.oninput = () => { c.s = +a.value; dirty(); };
-    b.oninput = () => { c.e = +b.value; dirty(); };
-    t.oninput = () => { c.text = t.value; dirty(); };
-    d.querySelector(".del").onclick = () => { S.cues.splice(i, 1); dirty(); render(); };
-    box.appendChild(d);
+    const d = document.createElement("div"); d.className = "cue"; d.dataset.i = i;
+    d.innerHTML = `<div class="tm"><input class="st" type="number" step="0.01" min="0" aria-label="Start" value="${c.s.toFixed(2)}"><span class="cnt"></span><input class="en" type="number" step="0.01" min="0" aria-label="End" value="${c.e.toFixed(2)}"></div>
+      <textarea rows="1" aria-label="Subtitle text">${esc(c.text)}</textarea><button class="x" title="মুছুন" aria-label="Delete cue">×</button>`;
+    const st = d.querySelector(".st"), en = d.querySelector(".en"), ta = d.querySelector("textarea");
+    refresh(d, c);
+    st.oninput = () => { c.s = +st.value; refresh(d, c); dirty(); };
+    en.oninput = () => { c.e = +en.value; refresh(d, c); dirty(); };
+    ta.oninput = () => { c.text = ta.value; fit(ta); refresh(d, c); dirty(); };
+    ta.onfocus = () => { if ($("aud").paused && $("aud").src) $("aud").currentTime = c.s; };
+    d.querySelector(".x").onclick = () => { S.cues.splice(i, 1); render(); dirty(); push(); };
+    box.appendChild(d); fit(ta);
+    if (i < S.cues.length - 1) {
+      const m = document.createElement("button"); m.className = "mg"; m.title = "পরের cue-র সাথে merge"; m.setAttribute("aria-label", "Merge with next cue"); m.innerHTML = MG;
+      m.onclick = () => { const n = S.cues[i + 1]; c.text = wrap(c.text.replace(/\n/g, " ") + " " + n.text.replace(/\n/g, " "), S.set.chars).join("\n"); c.e = n.e; S.cues.splice(i + 1, 1); render(); dirty(); push(); };
+      box.appendChild(m);
+    }
   });
 }
-$("add").onclick = () => {
-  const last = S.cues[S.cues.length - 1], s = last ? last.e : 0;
-  S.cues.push({ s, e: s + 1, text: "" }); dirty(); render();
-};
+$("add").onclick = () => { const l = S.cues[S.cues.length - 1], s = l ? l.e : 0; S.cues.push({ s, e: s + 1, text: "" }); render(); dirty(); push(); };
 $("apply").onclick = () => {
-  if (!S.words.length) { readSet(); return alert("আগে Speech to Text করুন।"); }
+  if (!S.words.length) { readSet(); render(); drawTL(); return alert("Auto-split করতে আগে Speech to Text করতে হবে। Limit সেট হয়েছে, লাল cue দেখে নিজে ঠিক করুন।"); }
   if (S.cues.length && !confirm("Settings অনুযায়ী subtitle নতুন করে ভাগ হবে। হাতে করা edit মুছে যাবে। এগিয়ে যাবেন?")) return;
-  build(); dirty(); render();
+  build(); render(); dirty(); push();
 };
+["mc", "ml", "ms"].forEach(id => $(id).onchange = () => { readSet(); render(); drawTL(); });
+
+/* ---------- timeline ---------- */
+function drawTL() {
+  const cv = $("cv"), last = S.cues.length ? S.cues[S.cues.length - 1].e : 0, dur = Math.max(S.dur, last, 5);
+  const W = Math.ceil(dur * PPS), H = 110, r = devicePixelRatio || 1;
+  cv.width = W * r; cv.height = H * r; cv.style.width = W + "px"; cv.style.height = H + "px";
+  const g = cv.getContext("2d"); g.scale(r, r); g.clearRect(0, 0, W, H);
+  g.font = "11px 'Hind Siliguri',sans-serif"; g.fillStyle = "#6b7280"; g.strokeStyle = "#d6d6d3";
+  for (let t = 0; t <= dur; t++) {
+    const x = t * PPS + .5; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, t % 5 ? 6 : 12); g.stroke();
+    if (t % 5 === 0) g.fillText(`${Math.floor(t / 60)}:${pad(t % 60)}`, x + 4, 22);
+  }
+  S.cues.forEach(c => { g.fillStyle = isBad(c) ? "#f7c6c6" : "#c8efdc"; g.fillRect(c.s * PPS, 30, Math.max(2, (c.e - c.s) * PPS - 1), H - 34); });
+  g.fillStyle = "rgba(17,17,17,.55)";
+  const mid = 30 + (H - 34) / 2, bw = PPS / PK;
+  S.peaks.forEach((p, k) => { const h = Math.max(1, p * (H - 40)); g.fillRect(k * bw, mid - h / 2, Math.max(1, bw - 1), h); });
+}
+function seek(t) { const a = $("aud"); if (a.src) a.currentTime = t; movePH(t); }
+$("cv").onclick = e => { const t = e.offsetX / PPS; seek(t); if ($("aud").src) $("aud").play(); };
+function movePH(t) {
+  $("ph").style.left = t * PPS + "px";
+  const sc = $("tls"), x = t * PPS; if (x < sc.scrollLeft || x > sc.scrollLeft + sc.clientWidth - 40) sc.scrollLeft = Math.max(0, x - 80);
+  const i = S.cues.findIndex(c => t >= c.s && t < c.e);
+  document.querySelectorAll(".cue").forEach(r => r.classList.toggle("act", +r.dataset.i === i));
+}
+(function loop() { const a = $("aud"); if (!a.paused) movePH(a.currentTime); requestAnimationFrame(loop); })();
+$("aud").onseeked = () => movePH($("aud").currentTime);
 
 /* ---------- transcription ---------- */
+$("file").onchange = () => {
+  const f = $("file").files[0]; if (!f) return;
+  $("aud").src = URL.createObjectURL(f); $("noaud").hidden = true; $("fn").textContent = f.name;
+};
 async function decode(file) {
   const ctx = new AudioContext({ sampleRate: 16000 });
   const ab = await ctx.decodeAudioData(await file.arrayBuffer());
   const n = ab.numberOfChannels, out = new Float32Array(ab.length);
   for (let c = 0; c < n; c++) { const d = ab.getChannelData(c); for (let i = 0; i < d.length; i++) out[i] += d[i] / n; }
   ctx.close(); return out;
+}
+function peaks(a) {
+  const step = Math.floor(16000 / PK), n = Math.ceil(a.length / step), p = []; let mx = 0.001;
+  for (let i = 0; i < n; i++) { let m = 0; for (let j = i * step, e = Math.min(a.length, j + step); j < e; j++) { const v = Math.abs(a[j]); if (v > m) m = v; } p.push(m); if (m > mx) mx = m; }
+  return p.map(v => +(v / mx).toFixed(2));
 }
 $("go").onclick = async () => {
   const f = $("file").files[0];
@@ -204,7 +304,7 @@ $("go").onclick = async () => {
   btn.disabled = true; prog.hidden = false; prog.value = 0; S.name = f.name.replace(/\.[^.]+$/, "") || "subtitle";
   try {
     st.textContent = "Audio পড়া হচ্ছে…";
-    const audio = await decode(f);
+    const audio = await decode(f); S.dur = audio.length / 16000; S.peaks = peaks(audio);
     st.textContent = "Model load হচ্ছে…";
     const asr = await pipeline("automatic-speech-recognition", $("model").value, {
       progress_callback: p => { if (p.status === "progress") { prog.value = p.progress; st.textContent = `Model download: ${Math.round(p.progress)}%`; } }
@@ -214,13 +314,14 @@ $("go").onclick = async () => {
     if ($("lang").value) opts.language = $("lang").value;
     const res = await asr(audio, opts);
     S.words = res.chunks.map(c => ({ t: c.text.trim(), s: c.timestamp[0] ?? 0, e: c.timestamp[1] ?? (c.timestamp[0] ?? 0) + .3 })).filter(w => w.t);
-    build(); render(); dirty();
+    build(); resetHist(); pending = true; local(); bar();
     st.textContent = `হয়ে গেছে: ${S.words.length} শব্দ, ${S.cues.length} cue।`;
+    $("fn").textContent = f.name; tab("S");
   } catch (e) { console.error(e); st.textContent = "Error: " + (e.message || e); }
   btn.disabled = false; prog.hidden = true;
 };
 
-/* ---------- exports ---------- */
+/* ---------- export ---------- */
 const cueList = () => S.cues.filter(c => c.text.trim());
 const FMT = {
   srt: () => cueList().map((c, i) => `${i + 1}\n${ts(c.s, ",")} --> ${ts(c.e, ",")}\n${c.text}\n`).join("\n"),
@@ -249,7 +350,10 @@ function pdf() {
   document.body.appendChild(f); f.srcdoc = FMT.html();
   f.onload = () => { setTimeout(() => { f.contentWindow.focus(); f.contentWindow.print(); }, 400); setTimeout(() => f.remove(), 60000); };
 }
+$("exp").onclick = e => { e.stopPropagation(); $("menu").hidden = !$("menu").hidden; };
+document.addEventListener("click", () => $("menu").hidden = true);
 document.querySelectorAll("[data-x]").forEach(b => b.onclick = async () => {
+  if (tmr) push();
   if (!cueList().length) return alert("Export করার মতো subtitle নেই।");
   const x = b.dataset.x, n = S.name;
   if (x === "pdf") return pdf();
@@ -260,17 +364,16 @@ document.querySelectorAll("[data-x]").forEach(b => b.onclick = async () => {
 
 /* ---------- save, offline bar, GitHub ---------- */
 const KEY = "subtitle_progress", GK = "subtitle_github";
-function snapshot() { readSet(); return JSON.stringify({ name: S.name, words: S.words, cues: S.cues, set: S.set, at: new Date().toISOString() }); }
-function local() { try { localStorage.setItem(KEY, snapshot()); } catch (e) {} }
-function dirty() { pending = true; bar(); }
+function snapshot() { readSet(); return JSON.stringify({ name: S.name, words: S.words, cues: S.cues, set: S.set, peaks: S.peaks, dur: S.dur, at: new Date().toISOString() }); }
+function local() { try { localStorage.setItem(KEY, snapshot()); $("saved").textContent = "Last saved " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); } catch (e) {} }
 function bar() {
-  const on = pending, online = navigator.onLine;
-  $("bar").classList.toggle("on", on);
+  const online = navigator.onLine;
+  $("bar").classList.toggle("on", pending);
   $("barmsg").textContent = online ? "Progress GitHub-এ upload করা হয়নি।" : "Unsaved progress — আপনি offline আছেন। Online হলে upload করতে পারবেন।";
   $("up").style.display = online ? "" : "none";
 }
 addEventListener("online", bar); addEventListener("offline", bar);
-$("save").onclick = () => { local(); $("status").textContent = "Save হয়েছে (এই device-এ)।"; bar(); };
+$("save").onclick = () => { if (tmr) push(); local(); bar(); };
 const cfg = () => { try { return JSON.parse(localStorage.getItem(GK)) || {}; } catch (e) { return {}; } };
 $("gsave").onclick = () => {
   localStorage.setItem(GK, JSON.stringify({ u: $("gu").value.trim(), r: $("gr").value.trim(), p: $("gp").value.trim() || "subtitle-progress.json", t: $("gt").value.trim() }));
@@ -279,16 +382,16 @@ $("gsave").onclick = () => {
 const api = c => `https://api.github.com/repos/${c.u}/${c.r}/contents/${c.p}`;
 const hdr = c => ({ Authorization: "Bearer " + c.t, Accept: "application/vnd.github+json" });
 $("up").onclick = async () => {
-  const c = cfg(); if (!c.u || !c.r || !c.t) return alert("আগে GitHub sync-এ username, repo আর token দিন।");
+  const c = cfg(); if (!c.u || !c.r || !c.t) return alert("আগে GitHub sync-এ username, repo আর token দিন (Subtitles tab-এর ডান পাশে)।");
   $("up").disabled = true;
   try {
-    local();
+    if (tmr) push(); local();
     let sha; const g = await fetch(api(c), { headers: hdr(c) });
     if (g.ok) sha = (await g.json()).sha;
     const body = { message: "Update subtitle progress", content: btoa(unescape(encodeURIComponent(snapshot()))), sha };
     const r = await fetch(api(c), { method: "PUT", headers: hdr(c), body: JSON.stringify(body) });
     if (!r.ok) throw new Error((await r.json()).message || r.status);
-    pending = false; $("status").textContent = "GitHub-এ upload হয়েছে।";
+    pending = false; alert("GitHub-এ upload হয়েছে।");
   } catch (e) { alert("Upload হয়নি: " + e.message); }
   $("up").disabled = false; bar();
 };
@@ -297,16 +400,16 @@ $("gload").onclick = async () => {
   try {
     const r = await fetch(api(c), { headers: hdr(c) }); if (!r.ok) throw new Error((await r.json()).message);
     load(JSON.parse(decodeURIComponent(escape(atob((await r.json()).content.replace(/\n/g, ""))))));
-    pending = false; bar(); $("status").textContent = "GitHub থেকে progress এসেছে।";
+    pending = false; bar(); tab("S");
   } catch (e) { alert("Load হয়নি: " + e.message); }
 };
 function load(d) {
-  Object.assign(S, { name: d.name || "subtitle", words: d.words || [], cues: d.cues || [], set: d.set || S.set });
-  $("mc").value = S.set.chars; $("ml").value = S.set.lines; $("ms").value = S.set.sec; render();
+  Object.assign(S, { name: d.name || "subtitle", words: d.words || [], cues: d.cues || [], set: d.set || S.set, peaks: d.peaks || [], dur: d.dur || 0 });
+  $("mc").value = S.set.chars; $("ml").value = S.set.lines; $("ms").value = S.set.sec; $("fn").textContent = S.name; resetHist();
 }
 (() => {
   const c = cfg(); $("gu").value = c.u || ""; $("gr").value = c.r || ""; $("gp").value = c.p || "subtitle-progress.json"; $("gt").value = c.t || "";
-  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d) load(d); else render(); } catch (e) { render(); }
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && d.cues && d.cues.length) { load(d); tab("S"); } } catch (e) {}
   bar();
 })();
 </script>
