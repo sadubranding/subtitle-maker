@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subtitle Maker – MP3 to SRT</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{--ink:#1c2321;--mute:#5d6b67;--line:#dfe5e3;--acc:#0f766e;--accbg:#e6f4f2;--warn:#fff4d6;--warnline:#e8c766}
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--ink);font-family:"Hind Siliguri",system-ui,sans-serif;font-size:16px;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 80px}
+h1{font-size:1.7rem;margin:8px 0 2px}h2{font-size:1.15rem;margin:0 0 10px}
+.sub{color:var(--mute);margin:0 0 20px}
+section{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px;background:#fff}
+label{display:block;font-weight:500;font-size:.92rem;margin-bottom:4px}
+input,select,textarea,button{font:inherit}
+input[type=text],input[type=password],input[type=number],select,textarea{width:100%;padding:8px 10px;border:1px solid #c9d3d0;border-radius:8px;background:#fff;color:var(--ink)}
+textarea{resize:vertical}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+button{border:1px solid var(--acc);background:var(--acc);color:#fff;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:600}
+button.ghost{background:#fff;color:var(--acc)}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #7cc5bd;outline-offset:1px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.hint{color:var(--mute);font-size:.88rem;margin:6px 0 0}
+progress{width:100%;height:10px;margin-top:10px;accent-color:var(--acc)}
+#status{margin-top:8px;font-size:.92rem;color:var(--mute);min-height:1.3em}
+.cue{display:grid;grid-template-columns:92px 92px 1fr auto;gap:8px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.cue:first-child{border-top:0}
+.cue textarea{min-height:58px}
+.cue .n{font-size:.78rem;color:var(--mute)}
+.cue button{padding:6px 10px}
+@media(max-width:620px){.cue{grid-template-columns:1fr 1fr}.cue textarea{grid-column:1/-1}.cue .del{grid-column:1/-1}}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--warn);border-top:1px solid var(--warnline);padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;z-index:9}
+#bar.on{display:flex}
+.exp{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.exp .main{background:var(--accbg)}
+details summary{cursor:pointer;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Subtitle Maker</h1>
+  <p class="sub">MP3 upload করুন → Speech to Text → Subtitle edit → Export। Bangla + English. সব কাজ আপনার browser-এই হয়, কোনো server লাগে না।</p>
+
+  <section>
+    <h2>1. Audio &amp; Speech to Text</h2>
+    <div class="row">
+      <div><label for="file">Audio file (.mp3, .wav, .m4a)</label><input id="file" type="file" accept="audio/*,.mp3"></div>
+      <div><label for="lang">Language / ভাষা</label>
+        <select id="lang"><option value="bengali">বাংলা (Bangla)</option><option value="english">English</option><option value="">Auto detect</option></select></div>
+      <div><label for="model">Model</label>
+        <select id="model"><option value="Xenova/whisper-small" selected>Small (বাংলার জন্য ভালো, ধীর)</option><option value="Xenova/whisper-base">Base (দ্রুত, কম accurate)</option><option value="Xenova/whisper-tiny">Tiny (খুব দ্রুত, English-এর জন্য)</option></select></div>
+    </div>
+    <div class="actions"><button id="go">Speech to Text শুরু করুন</button></div>
+    <progress id="prog" value="0" max="100" hidden></progress>
+    <div id="status" role="status"></div>
+    <p class="hint">প্রথমবার model download হবে (Small ≈ 250MB), এরপর browser-এ cache থাকবে। Audio কোথাও upload হয় না।</p>
+  </section>
+
+  <section>
+    <h2>2. Edit subtitles</h2>
+    <div class="row">
+      <div><label for="mc">Max characters per line</label><input id="mc" type="number" min="1" max="100" value="10"></div>
+      <div><label for="ml">Max lines per cue</label><input id="ml" type="number" min="1" max="6" value="2"></div>
+      <div><label for="ms">Max seconds per cue</label><input id="ms" type="number" min="0.2" max="30" step="0.1" value="1"></div>
+    </div>
+    <div class="actions">
+      <button id="apply" class="ghost">Settings প্রয়োগ করুন</button>
+      <button id="save">Save</button>
+    </div>
+    <p class="hint">Settings বদলালে subtitle নতুন করে ভাগ হবে (হাতে করা edit মুছে যাবে)। নিচে প্রতিটা cue নিজে edit করা যাবে।</p>
+    <div id="cues"></div>
+    <div class="actions"><button id="add" class="ghost">+ নতুন cue</button></div>
+  </section>
+
+  <section>
+    <h2>3. Export</h2>
+    <div class="exp">
+      <button class="main" data-x="srt">SRT</button>
+      <button data-x="vtt" class="ghost">VTT</button>
+      <button data-x="txt" class="ghost">Text</button>
+      <button data-x="pdf" class="ghost">PDF</button>
+      <button data-x="docx" class="ghost">DOCX</button>
+      <button data-x="json" class="ghost">JSON</button>
+      <button data-x="html" class="ghost">HTML</button>
+    </div>
+    <p class="hint">PDF-এর জন্য print window খুলবে, সেখানে "Save as PDF" বেছে নিন (এতে বাংলা অক্ষর ঠিক থাকে)।</p>
+  </section>
+
+  <section>
+    <details>
+      <summary>GitHub sync (progress সব device-এ পেতে)</summary>
+      <div class="row" style="margin-top:12px">
+        <div><label for="gu">GitHub username</label><input id="gu" type="text" autocomplete="off"></div>
+        <div><label for="gr">Repository name</label><input id="gr" type="text" autocomplete="off"></div>
+        <div><label for="gp">File path</label><input id="gp" type="text" value="subtitle-progress.json"></div>
+        <div><label for="gt">Personal access token (contents: write)</label><input id="gt" type="password" autocomplete="off"></div>
+      </div>
+      <div class="actions"><button id="gsave" class="ghost">Config রাখুন</button><button id="gload" class="ghost">GitHub থেকে progress আনুন</button></div>
+      <p class="hint">Token শুধু এই browser-এর localStorage-এ থাকে। Public repo-তে progress file দেখা যাবে, তাই private repo ব্যবহার করুন।</p>
+    </details>
+  </section>
+</div>
+
+<div id="bar"><span id="barmsg"></span><button id="up">Upload progress to GitHub</button></div>
+
+<script type="module">
+import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2";
+env.allowLocalModels = false;
+const $ = id => document.getElementById(id);
+const S = { name: "subtitle", words: [], cues: [], set: { chars: 10, lines: 2, sec: 1 } };
+let pending = false;
+
+/* ---------- helpers ---------- */
+const seg = s => typeof Intl !== "undefined" && Intl.Segmenter
+  ? [...new Intl.Segmenter("bn", { granularity: "grapheme" }).segment(s)].map(x => x.segment) : [...s];
+function wrap(text, max) {
+  const out = []; let cur = "";
+  for (const raw of text.split(/\s+/).filter(Boolean)) {
+    const g = seg(raw);
+    while (g.length > max) { if (cur) { out.push(cur); cur = ""; } out.push(g.splice(0, max).join("")); }
+    const w = g.join(""); if (!w) continue;
+    if (!cur) cur = w;
+    else if (seg(cur).length + 1 + g.length <= max) cur += " " + w;
+    else { out.push(cur); cur = w; }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+function readSet() {
+  S.set = { chars: Math.max(1, +$("mc").value || 10), lines: Math.max(1, +$("ml").value || 2), sec: Math.max(.2, +$("ms").value || 1) };
+}
+function build() {
+  readSet();
+  const { chars, lines, sec } = S.set, raw = []; let cur = null;
+  for (const w of S.words) {
+    if (cur) {
+      const t = cur.text + " " + w.t;
+      if (wrap(t, chars).length <= lines && w.e - cur.s <= sec) { cur.text = t; cur.e = w.e; continue; }
+      raw.push(cur);
+    }
+    cur = { s: w.s, e: w.e, text: w.t };
+  }
+  if (cur) raw.push(cur);
+  S.cues = [];
+  for (const c of raw) {
+    const ls = wrap(c.text, chars);
+    if (ls.length <= lines) { S.cues.push({ s: c.s, e: c.e, text: ls.join("\n") }); continue; }
+    const parts = Math.ceil(ls.length / lines), d = (c.e - c.s) / parts; // very long single word: split by time
+    for (let i = 0; i < parts; i++) S.cues.push({ s: c.s + d * i, e: c.s + d * (i + 1), text: ls.slice(i * lines, (i + 1) * lines).join("\n") });
+  }
+}
+const pad = (n, l = 2) => String(n).padStart(l, "0");
+function ts(x, sep) {
+  const ms = Math.round(Math.max(0, x) * 1000), h = Math.floor(ms / 3600000), m = Math.floor(ms % 3600000 / 60000), s = Math.floor(ms % 60000 / 1000);
+  return `${pad(h)}:${pad(m)}:${pad(s)}${sep}${pad(ms % 1000, 3)}`;
+}
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/* ---------- cue editor ---------- */
+function render() {
+  const box = $("cues");
+  if (!S.cues.length) { box.innerHTML = '<p class="hint">এখনো কোনো subtitle নেই। আগে audio থেকে Speech to Text করুন।</p>'; return; }
+  box.innerHTML = "";
+  S.cues.forEach((c, i) => {
+    const d = document.createElement("div"); d.className = "cue";
+    d.innerHTML = `<div><span class="n">#${i + 1} Start</span><input type="number" step="0.1" min="0" value="${c.s.toFixed(2)}" aria-label="Start"></div>
+      <div><span class="n">End</span><input type="number" step="0.1" min="0" value="${c.e.toFixed(2)}" aria-label="End"></div>
+      <textarea aria-label="Text">${esc(c.text)}</textarea>
+      <button class="ghost del" title="Delete">মুছুন</button>`;
+    const [a, b] = d.querySelectorAll("input"), t = d.querySelector("textarea");
+    a.oninput = () => { c.s = +a.value; dirty(); };
+    b.oninput = () => { c.e = +b.value; dirty(); };
+    t.oninput = () => { c.text = t.value; dirty(); };
+    d.querySelector(".del").onclick = () => { S.cues.splice(i, 1); dirty(); render(); };
+    box.appendChild(d);
+  });
+}
+$("add").onclick = () => {
+  const last = S.cues[S.cues.length - 1], s = last ? last.e : 0;
+  S.cues.push({ s, e: s + 1, text: "" }); dirty(); render();
+};
+$("apply").onclick = () => {
+  if (!S.words.length) { readSet(); return alert("আগে Speech to Text করুন।"); }
+  if (S.cues.length && !confirm("Settings অনুযায়ী subtitle নতুন করে ভাগ হবে। হাতে করা edit মুছে যাবে। এগিয়ে যাবেন?")) return;
+  build(); dirty(); render();
+};
+
+/* ---------- transcription ---------- */
+async function decode(file) {
+  const ctx = new AudioContext({ sampleRate: 16000 });
+  const ab = await ctx.decodeAudioData(await file.arrayBuffer());
+  const n = ab.numberOfChannels, out = new Float32Array(ab.length);
+  for (let c = 0; c < n; c++) { const d = ab.getChannelData(c); for (let i = 0; i < d.length; i++) out[i] += d[i] / n; }
+  ctx.close(); return out;
+}
+$("go").onclick = async () => {
+  const f = $("file").files[0];
+  if (!f) return alert("আগে একটা audio file বেছে নিন।");
+  const btn = $("go"), prog = $("prog"), st = $("status");
+  btn.disabled = true; prog.hidden = false; prog.value = 0; S.name = f.name.replace(/\.[^.]+$/, "") || "subtitle";
+  try {
+    st.textContent = "Audio পড়া হচ্ছে…";
+    const audio = await decode(f);
+    st.textContent = "Model load হচ্ছে…";
+    const asr = await pipeline("automatic-speech-recognition", $("model").value, {
+      progress_callback: p => { if (p.status === "progress") { prog.value = p.progress; st.textContent = `Model download: ${Math.round(p.progress)}%`; } }
+    });
+    prog.removeAttribute("value"); st.textContent = "Transcribe হচ্ছে… (বড় file-এ কিছুটা সময় লাগবে)";
+    const opts = { task: "transcribe", return_timestamps: "word", chunk_length_s: 30, stride_length_s: 5 };
+    if ($("lang").value) opts.language = $("lang").value;
+    const res = await asr(audio, opts);
+    S.words = res.chunks.map(c => ({ t: c.text.trim(), s: c.timestamp[0] ?? 0, e: c.timestamp[1] ?? (c.timestamp[0] ?? 0) + .3 })).filter(w => w.t);
+    build(); render(); dirty();
+    st.textContent = `হয়ে গেছে: ${S.words.length} শব্দ, ${S.cues.length} cue।`;
+  } catch (e) { console.error(e); st.textContent = "Error: " + (e.message || e); }
+  btn.disabled = false; prog.hidden = true;
+};
+
+/* ---------- exports ---------- */
+const cueList = () => S.cues.filter(c => c.text.trim());
+const FMT = {
+  srt: () => cueList().map((c, i) => `${i + 1}\n${ts(c.s, ",")} --> ${ts(c.e, ",")}\n${c.text}\n`).join("\n"),
+  vtt: () => "WEBVTT\n\n" + cueList().map((c, i) => `${i + 1}\n${ts(c.s, ".")} --> ${ts(c.e, ".")}\n${c.text}\n`).join("\n"),
+  txt: () => cueList().map(c => c.text.replace(/\n/g, " ")).join("\n"),
+  json: () => JSON.stringify({ name: S.name, settings: S.set, cues: cueList().map((c, i) => ({ index: i + 1, start: +c.s.toFixed(3), end: +c.e.toFixed(3), text: c.text })) }, null, 2),
+  html: () => `<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><title>${esc(S.name)}</title><style>body{font-family:"Noto Sans Bengali","Hind Siliguri",Arial,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#111}.c{margin:0 0 14px}.t{color:#666;font-size:12px}p{margin:2px 0;white-space:pre-line}</style></head><body><h1>${esc(S.name)}</h1>${cueList().map(c => `<div class="c"><div class="t">${ts(c.s, ".")} → ${ts(c.e, ".")}</div><p>${esc(c.text)}</p></div>`).join("")}</body></html>`
+};
+function save(name, data, type) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type }));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+async function docx() {
+  const paras = cueList().map(c => {
+    const lines = c.text.split("\n").map(l => `<w:t xml:space="preserve">${esc(l)}</w:t>`).join("<w:br/>");
+    return `<w:p><w:r><w:rPr><w:color w:val="666666"/><w:sz w:val="18"/></w:rPr><w:t>${ts(c.s, ",")} --&gt; ${ts(c.e, ",")}</w:t></w:r></w:p><w:p><w:r>${lines}</w:r></w:p>`;
+  }).join("");
+  const z = new JSZip();
+  z.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`);
+  z.file("_rels/.rels", `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+  z.file("word/document.xml", `<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${paras}</w:body></w:document>`);
+  return z.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+}
+function pdf() {
+  const f = document.createElement("iframe"); f.style.cssText = "position:fixed;width:0;height:0;border:0";
+  document.body.appendChild(f); f.srcdoc = FMT.html();
+  f.onload = () => { setTimeout(() => { f.contentWindow.focus(); f.contentWindow.print(); }, 400); setTimeout(() => f.remove(), 60000); };
+}
+document.querySelectorAll("[data-x]").forEach(b => b.onclick = async () => {
+  if (!cueList().length) return alert("Export করার মতো subtitle নেই।");
+  const x = b.dataset.x, n = S.name;
+  if (x === "pdf") return pdf();
+  if (x === "docx") return save(n + ".docx", await docx());
+  const types = { srt: "application/x-subrip", vtt: "text/vtt", txt: "text/plain", json: "application/json", html: "text/html" };
+  save(`${n}.${x}`, "\ufeff" + FMT[x](), types[x] + ";charset=utf-8");
+});
+
+/* ---------- save, offline bar, GitHub ---------- */
+const KEY = "subtitle_progress", GK = "subtitle_github";
+function snapshot() { readSet(); return JSON.stringify({ name: S.name, words: S.words, cues: S.cues, set: S.set, at: new Date().toISOString() }); }
+function local() { try { localStorage.setItem(KEY, snapshot()); } catch (e) {} }
+function dirty() { pending = true; bar(); }
+function bar() {
+  const on = pending, online = navigator.onLine;
+  $("bar").classList.toggle("on", on);
+  $("barmsg").textContent = online ? "Progress GitHub-এ upload করা হয়নি।" : "Unsaved progress — আপনি offline আছেন। Online হলে upload করতে পারবেন।";
+  $("up").style.display = online ? "" : "none";
+}
+addEventListener("online", bar); addEventListener("offline", bar);
+$("save").onclick = () => { local(); $("status").textContent = "Save হয়েছে (এই device-এ)।"; bar(); };
+const cfg = () => { try { return JSON.parse(localStorage.getItem(GK)) || {}; } catch (e) { return {}; } };
+$("gsave").onclick = () => {
+  localStorage.setItem(GK, JSON.stringify({ u: $("gu").value.trim(), r: $("gr").value.trim(), p: $("gp").value.trim() || "subtitle-progress.json", t: $("gt").value.trim() }));
+  alert("GitHub config রাখা হয়েছে।");
+};
+const api = c => `https://api.github.com/repos/${c.u}/${c.r}/contents/${c.p}`;
+const hdr = c => ({ Authorization: "Bearer " + c.t, Accept: "application/vnd.github+json" });
+$("up").onclick = async () => {
+  const c = cfg(); if (!c.u || !c.r || !c.t) return alert("আগে GitHub sync-এ username, repo আর token দিন।");
+  $("up").disabled = true;
+  try {
+    local();
+    let sha; const g = await fetch(api(c), { headers: hdr(c) });
+    if (g.ok) sha = (await g.json()).sha;
+    const body = { message: "Update subtitle progress", content: btoa(unescape(encodeURIComponent(snapshot()))), sha };
+    const r = await fetch(api(c), { method: "PUT", headers: hdr(c), body: JSON.stringify(body) });
+    if (!r.ok) throw new Error((await r.json()).message || r.status);
+    pending = false; $("status").textContent = "GitHub-এ upload হয়েছে।";
+  } catch (e) { alert("Upload হয়নি: " + e.message); }
+  $("up").disabled = false; bar();
+};
+$("gload").onclick = async () => {
+  const c = cfg(); if (!c.u || !c.r || !c.t) return alert("আগে GitHub config দিন।");
+  try {
+    const r = await fetch(api(c), { headers: hdr(c) }); if (!r.ok) throw new Error((await r.json()).message);
+    load(JSON.parse(decodeURIComponent(escape(atob((await r.json()).content.replace(/\n/g, ""))))));
+    pending = false; bar(); $("status").textContent = "GitHub থেকে progress এসেছে।";
+  } catch (e) { alert("Load হয়নি: " + e.message); }
+};
+function load(d) {
+  Object.assign(S, { name: d.name || "subtitle", words: d.words || [], cues: d.cues || [], set: d.set || S.set });
+  $("mc").value = S.set.chars; $("ml").value = S.set.lines; $("ms").value = S.set.sec; render();
+}
+(() => {
+  const c = cfg(); $("gu").value = c.u || ""; $("gr").value = c.r || ""; $("gp").value = c.p || "subtitle-progress.json"; $("gt").value = c.t || "";
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if (d) load(d); else render(); } catch (e) { render(); }
+  bar();
+})();
+</script>
+</body>
+</html>
